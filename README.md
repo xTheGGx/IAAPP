@@ -1,5 +1,5 @@
 # webApp
-Aplicación web con implementación de algoritmos de aprendizaje automático
+Aplicación web con implementación de algoritmos de aprendizaje 
 ---
 * Instalar Python3 desde extensiones visual studioCode
 * Crear y activar el entorno virtual para que todas las bibliotecas funcionen correctamente
@@ -7,7 +7,7 @@ Aplicación web con implementación de algoritmos de aprendizaje automático
     .\env\Scripts\activate
 ---Bibliotecas necesarias
 ```
-pip install flask apyori pandas matplotlib scipy pandas scikit-learn virtualenv numpy seaborn
+pip install flask apyori pandas matplotlib scipy pandas scikit-learn virtualenv numpy seaborn kneed
 ```
 --Iniciar servicio
 ```

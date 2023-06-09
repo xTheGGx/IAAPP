@@ -1,0 +1,107 @@
+{% extends "base/base.html" %}
+{% block title %}Cluster Particional{% endblock %}
+{% block body %}
+{% include 'components/navbar.html' %}
+<main class="base-main-container center-content mdc-top-app-bar--fixed-adjust">
+
+        <div class="contenedor">
+          <h1 class="seccion-titulo">Árboles [Pronóstico]</h1>            
+        </div>
+      </section>
+    <div class= "container-fluid text-center">
+        
+        <form action="/tree/prognosis" method="POST">
+            <div class="grafico">
+                <h2>Historial de amazon del 2019-1-1 a 2023-5-25</h2>
+                <img src="{{ url_for('static', filename='img/charts/treeProg.png') }}" alt="Error al mostrar el mapa" style="width: 1200px; height: auto;">
+            </div>
+            <div>
+                <h3>Parametros de configuración</h3>
+                <div class="input-group">
+                    <span class="input-group-text">max depth:</span>
+                    <input class="form-control" type="number" id="parametro1" name="parametro1" step="any" ></br>
+                  </div>
+    
+                  <div class="input-group">
+                    <span class="input-group-text">min samp split:</span>
+                    <input class="form-control" type="number" id="parametro2" name="parametro2" step="any" ></br>
+                  </div>
+    
+                  <div class="input-group">
+                    <span class="input-group-text">min samp leaf:</span>
+                    <input class="form-control" type="number" id="parametro3" name="parametro3" step="any" ></br>
+                  </div>
+                  <h3>Parametros de Predicción</h3>
+    
+                  <div class="input-group">
+                    <span class="input-group-text">Open:</span>
+                    <input class="form-control" type="number" id="parametro4" name="parametro4" step="any" ></br>
+                  </div>
+    
+                  <div class="input-group">
+                    <span class="input-group-text">High:</span>
+                    <input class="form-control" type="number" id="parametro5" name="parametro5" step="any" ></br>
+                  </div>
+    
+                  <div class="input-group">
+                    <span class="input-group-text">Low:</span>
+                    <input class="form-control" type="number" id="parametro6" name="parametro6" step="any" ></br>
+                  </div>
+                </br> 
+                <input type="submit" name ="enviar", value="Ejecutar" class="btn btn-outline-success btn-lg"> 
+                
+            </div>
+    </div>
+            <div>
+    
+                {% if arbrep %}
+                <div class= "container-fluid text-center">
+                    <h2>Resultados del arbol</h2>
+                    <h3>Predicción</h3>
+                    <img src="{{ url_for('static', filename='img/charts/treeProg.png') }}" alt="Error al mostrar el mapa" style="width: 1200px; height: auto;">
+                    <h2>Reglas</h2>
+                </div>
+    
+               
+                    <pre>{{arbrep}}</pre>
+                <div class= "container-fluid text-center">
+                    <div class="alert alert-success" role="alert">
+                    <p>score: {{arbscore}}</p>
+                    <p>Predicción: {{predic}}</p>
+                </div> 
+                    </div>
+                </div>
+                {% endif %}
+                    
+            </div>
+            <div>
+                    
+            </div>
+        </form>
+    </div>
+    
+</main>
+{% endblock %}
+{% block styles %}
+<style>
+    table {
+        border-collapse: collapse;
+        width: 50%; /* Reducir el ancho de la tabla al 50% */
+    }
+
+    th, td {
+        border: 1px solid #ddd;
+        padding: 4px; /* Reducir el relleno de las celdas de la tabla */
+        text-align: left;
+    }
+
+    th {
+        background-color: #f2f2f2;
+    }
+
+    .small-image {
+        max-width: 50%; /* Reducir el ancho máximo de la imagen al 50% */
+        height: auto; /* Ajustar automáticamente la altura de la imagen */
+    }
+</style>
+{% endblock %}

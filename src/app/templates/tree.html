@@ -1,0 +1,39 @@
+{% extends "base/base.html" %}
+{% block title %}Trees{% endblock %}
+{% block body %}
+{% include 'components/navbar.html' %}
+<main class="base-main-container center-content  mdc-top-app-bar--fixed-adjust">
+    <div>
+        <h1>Seleccionar archivo CSV</h1>
+        <form action="/tree/process" method="POST" id="tree-form">
+            <select name="file">
+                {% for csv_file in csv_files %}
+                <option value="{{ csv_file }}">{{ csv_file }}</option>
+                {% endfor %}
+            </select>
+            <br>
+            <label for="option-select">Elige el tipo de árbol:</label>
+            <select name="option" id="option-select">
+                <option value="clasificacion">Clasificación</option>
+                <option value="pronostico">Pronóstico</option>
+            </select>
+            <input type="submit" value="Procesar">
+        </form>
+    </div>
+</main>
+{% endblock %}
+{% block scripts %}
+<script>
+    document.getElementById("tree-form").addEventListener("submit", function(e) {
+        var optionSelect = document.getElementById("option-select");
+        var selectedOption = optionSelect.options[optionSelect.selectedIndex].value;
+        var metricasForm = document.getElementById("tree-form");
+
+        if (selectedOption === "clasificacion") {
+            metricasForm.action = "/tree/process";
+        }
+
+        // No es necesario agregar else if para las demás opciones, ya que el formulario se enviará a la ruta "/metricas/process" por defecto.
+    });
+</script>
+{% endblock %}
