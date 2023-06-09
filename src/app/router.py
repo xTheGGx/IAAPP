@@ -1,73 +1,52 @@
 import os
-import sqlite3
 import pandas as pd    
 from flask import Blueprint, request, render_template, redirect, url_for
 from werkzeug.utils import secure_filename
 from src.api.ia.metricasModule import Metricas
 from src.api.ia.clusteringModule import Clustering
+import matplotlib
+matplotlib.use('Agg')
+
 
 router = Blueprint('router', __name__)
-DATABASE = 'src\db\database.db'
-conn = sqlite3.connect('database.db')
-c = conn.cursor()
-
-# Crear tabla si no existe
-c.execute('''CREATE TABLE IF NOT EXISTS users (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                username TEXT NOT NULL,
-                password TEXT NOT NULL
-            )''')
-conn.commit()
 
 @router.route('/')
-@router.route('/home', methods=['GET', 'POST'])
+@router.route('/home')
 def home():
-    if request.method == 'POST':
-        username = request.form['username']
-        password = request.form['password']
-        conn = sqlite3.connect('database.db')
-        c = conn.cursor()
-        c.execute("SELECT * FROM users WHERE username=? AND password=?", (username, password))
-        user = c.fetchone()
-        if user:
-            return f'¡Bienvenido, {username}!'
-        else:
-            return 'Credenciales inválidas. Inténtalo de nuevo.'
     return render_template('home.html')
-
 
 @router.route('/menu')
 def menu():
     algorithms = [
         {
             'title': 'Apriori',
-            'description': 'Descubre patrones ocultos en grandes conjuntos de datos.',
-            'image': 'img/apriori.jpeg',
+            'description': 'This is the description for Card 1',
+            'image': 'img/logo.png',
             'link' : 'apriori'
 
         },
         {
             'title': 'Métricas de distancia',
-            'description': 'Observa cómo revelan similitudes y diferencias entre objetos en el análisis de datos.',
-            'image': 'img/metrics.jpeg',
+            'description': 'This is the description for Card 2',
+            'image': 'img/logo.png',
             'link' : 'metricas'
         },
         {
             'title': 'Clustering',
-            'description': 'Segmenta tus datos y toma decisiones más informadas.',
-            'image': 'img/cluster.jpeg',
+            'description': 'This is the description for Card 3',
+            'image': 'img/logo.png',
             'link': 'clustering'
         },
         {
-            'title': 'Clasificación logistica',
-            'description': 'Descubre cómo la clasificación logística revela patrones y predice resultados.',
-            'image': 'img/forest.jpeg',
+            'title': 'Árboles de desición',
+            'description': 'This is the description for Card 3',
+            'image': 'img/logo.png',
             'link': 'clustering'
         },
         {
-            'title': 'Árboles y bosques',
-            'description': 'Explora la magia de los árboles y bosques aleatorios para predecir.',
-            'image': 'img/forest.jpeg',
+            'title': 'Bosques aleatorios',
+            'description': 'This is the description for Card 3',
+            'image': 'img/logo.png',
             'link': 'clustering'
         }
     ]
@@ -239,32 +218,70 @@ def clustering():
     csv_files = [file for file in files if file.endswith('.csv')]
     return render_template('clustering.html', csv_files=csv_files)
 
+
 @router.route('/clustering/process', methods=['GET', 'POST'])
 def clusteringProcess():
     selected_file = request.form['file']
     option = request.form['option']
-    lim_inf = int(request.form['limInf'])
-    lim_sup = int(request.form['limSup'])
-    dist_a = int(request.form['distA'])
-    dist_b = int(request.form['distB'])
+    
     if option == "jerarquico":
-        return redirect(url_for('router.clusteringJerarquico', selected_file=selected_file, lim_inf=lim_inf, lim_sup=lim_sup, dist_a=dist_a, dist_b=dist_b, option = option))
+        return redirect(url_for('router.clusteringJerarquico', selected_file=selected_file, option = option))
     elif option == "particional":
-        return redirect(url_for('router.clusteringParticional', selected_file=selected_file, lim_inf=lim_inf, lim_sup=lim_sup, dist_a=dist_a, dist_b=dist_b, option = option))
+        return redirect(url_for('router.clusteringParticional', selected_file=selected_file, option = option))
+   
 
 @router.route('/clustering/jerarquico')
 def clusteringJerarquico():
     option = request.args.get('option')
     selected_file = request.args.get('selected_file')
-    distA = int(request.args.get('dist_a'))
-    distB = int(request.args.get('dist_b'))
-    limInferior = int(request.args.get('lim_inf'))
-    limSuperior = int(request.args.get('lim_sup'))
-
     cluster = Clustering(selected_file)
-    CorrMatrix = cluster.createCorrMatrix()
-    return render_template("jerarquico.html")    
+    NoNumMatx = cluster.delNoNums()
+    corrMatrix = cluster.createCorrMatrix(NoNumMatx)
+    cluster.createHeatMap(corrMatrix)
+    #matrizVar = cluster.createMVar()
+    #Mestandar = cluster.MEstandarizada(matrizVar)
+    #hCluster = cluster.hierarchyClusterPNG(Mestandar)
+   # matrix_html = cluster.hierarchyClusterArray(Mestandar)
 
-@router.route('/clustering/particional')
+    return render_template("jerarquico.html",
+                           corrMatrix=corrMatrix,
+                           #matrizVar=matrizVar,
+                          # matrix_html=matrix_html,
+                          # hCluster=hCluster
+                          )
+
+
+@router.route('/clustering/particional', methods=['GET', 'POST'])
 def clusteringParticional():
-    return render_template("particional.html")
+    option = request.args.get('option')
+    selected_file = request.args.get('selected_file')
+    cluster = Clustering(selected_file)
+    vars = []
+    corrMatrix = cluster.createCorrMatrix(cluster.delNoNums())
+    var = cluster.getColumns()
+    hMap = cluster.createHeatMap(corrMatrix)
+    if request.method == 'POST':
+        vars = request.form.getlist('vari')
+        metric = request.form['metric']
+        mVar = cluster.createMVar(vars)
+        mEst = cluster.MEstandarizada(mVar)
+        data = cluster.df
+        test = cluster.hierarchyClusterArray(mEst,metric)
+        data['clusterH'] = test.labels_
+        #Crea img de cluster
+        pRoute = cluster. PartitionalClusterPNG(mEst,metric)
+        centroidsP = data.groupby(['clusterH'])[var].mean()
+        centroidsP = centroidsP.to_html()
+        
+        return render_template('particional_results.html'
+                               ,pRoute = pRoute
+                               ,centroidsP =  centroidsP
+                               , variables = vars
+                               , metric = metric
+                               )
+    return render_template("particional.html", hMap = hMap,
+                           variables=var)
+
+@router.route('/clustering/particional/results', methods=['GET', 'POST'])
+def clusteringParticionalResults():
+    h = 2
